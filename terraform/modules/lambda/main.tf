@@ -59,15 +59,17 @@ resource "aws_iam_role_policy" "lambda_policy" {
 }
 
 # Lambda Layer for dependencies (OpenCV, numpy, etc.)
-resource "aws_lambda_layer_version" "cv_layer" {
-  filename            = "${path.module}/../../../lambda/layers/cv-layer.zip"
-  layer_name          = "${var.project_name}-cv-layer"
-  compatible_runtimes = ["python3.11"]
-  
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+# NOTE: For demo purposes, layer is commented out as all dependencies
+# are included in the deployment package. Uncomment for production use.
+# resource "aws_lambda_layer_version" "cv_layer" {
+#   filename            = "${path.module}/../../../lambda/layers/cv-layer.zip"
+#   layer_name          = "${var.project_name}-cv-layer"
+#   compatible_runtimes = ["python3.11"]
+#
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
 # Video Processor Lambda Function
 resource "aws_lambda_function" "video_processor" {
@@ -79,7 +81,8 @@ resource "aws_lambda_function" "video_processor" {
   timeout         = 900
   memory_size     = 3008
 
-  layers = [aws_lambda_layer_version.cv_layer.arn]
+  # Layer commented out - dependencies included in deployment package
+  # layers = [aws_lambda_layer_version.cv_layer.arn]
 
   environment {
     variables = {

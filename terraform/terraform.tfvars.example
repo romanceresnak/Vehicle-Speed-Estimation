@@ -1,0 +1,20 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and update with your values
+
+# AWS Region
+aws_region = "eu-west-1"  # Ireland region
+
+# Project name (used as prefix for all resources)
+project_name = "traffic-speed-analyzer"
+
+# Environment (dev, staging, prod)
+environment = "dev"
+
+# Common tags for all resources
+tags = {
+  Project     = "Vehicle Speed Estimation"
+  ManagedBy   = "Terraform"
+  Owner       = "Roman Ceresnak"
+  Environment = "dev"
+  Purpose     = "Demo/Article"
+}

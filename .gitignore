@@ -1,0 +1,53 @@
+# Claude Code
+.claude/
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/*.tfplan
+terraform/terraform.tfvars
+
+# Lambda deployment packages
+lambda/*/deployment.zip
+lambda/*/package/
+lambda/layers/*.zip
+lambda/layers/python/
+
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dashboard/build/
+dashboard/dist/
+dashboard/.env
+dashboard/.env.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# AWS
+.aws/
+
+# Misc
+*.log
+*.zip
+!lambda/layers/.gitkeep

@@ -1,0 +1,2 @@
+# This directory is used for Lambda layers
+# cv-layer.zip will be generated here by the build script

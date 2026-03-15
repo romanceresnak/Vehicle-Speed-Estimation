@@ -1,3 +1,3 @@
-boto3>=1.28.0
-opencv-python-headless==4.8.1.78
-numpy>=1.24.0
+# boto3>=1.28.0  # Already included in Lambda runtime
+# opencv-python-headless==4.8.1.78  # Removed for demo - using mock data
+# numpy>=1.24.0  # Removed for demo - not needed for mock data

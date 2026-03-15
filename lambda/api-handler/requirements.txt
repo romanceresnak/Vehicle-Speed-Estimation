@@ -1,1 +1,1 @@
-boto3>=1.28.0
+# boto3>=1.28.0  # Already included in Lambda runtime

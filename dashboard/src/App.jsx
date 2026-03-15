@@ -148,8 +148,10 @@ function App() {
   return (
     <div className="container">
       <header className="header">
-        <h1>AI Traffic Safety Analyzer</h1>
-        <p>Real-time vehicle detection and speed estimation dashboard</p>
+        <div className="header-content">
+          <h1>Traffic Speed Analyzer</h1>
+          <p>Real-time vehicle detection and speed analytics powered by AWS</p>
+        </div>
       </header>
 
       <div className="controls">
@@ -213,7 +215,7 @@ function App() {
         </ResponsiveContainer>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+      <div className="grid-2">
         <div className="chart-container">
           <h3 className="chart-title">Speed Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -253,8 +255,8 @@ function App() {
       </div>
 
       <div className="chart-container">
-        <h3 className="chart-title">Traffic Heatmap</h3>
-        <div style={{ height: '400px', borderRadius: '10px', overflow: 'hidden' }}>
+        <h3 className="chart-title">Traffic Location</h3>
+        <div style={{ height: '400px', borderRadius: '0.75rem', overflow: 'hidden' }}>
           <MapContainer
             center={[49.1951, 16.6068]}
             zoom={13}
@@ -275,9 +277,9 @@ function App() {
         </div>
       </div>
 
-      <footer style={{ textAlign: 'center', padding: '40px 0', color: '#666' }}>
-        <p>AI Traffic Safety Analyzer | Powered by AWS & YOLOv8</p>
-        <p><small>Using BrnoCompSpeed dataset from Brno University of Technology</small></p>
+      <footer>
+        <p>Traffic Speed Analyzer | Powered by AWS Serverless Architecture</p>
+        <small>Demo project using BrnoCompSpeed dataset</small>
       </footer>
     </div>
   )

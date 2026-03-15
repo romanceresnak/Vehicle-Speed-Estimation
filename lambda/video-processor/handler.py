@@ -1,11 +1,12 @@
 import json
 import boto3
 import os
-import cv2
-import numpy as np
+# import cv2  # Not needed for demo - using mock data
+# import numpy as np  # Not needed for demo
 from datetime import datetime
 from urllib.parse import unquote_plus
 import tempfile
+import random
 
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
@@ -63,44 +64,32 @@ def lambda_handler(event, context):
 def process_video(video_path, video_id):
     """
     Process video and detect vehicles with speed estimation
-    
-    NOTE: This is a simplified version for demo purposes.
+
+    NOTE: This is a DEMO version that generates mock data without actually processing video.
     In production, you would use:
     - YOLOv8 for vehicle detection
     - DeepSORT for tracking
     - Camera calibration for accurate speed estimation
+    - OpenCV for video processing
     """
-    
-    cap = cv2.VideoCapture(video_path)
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    
+
+    # For demo: Generate mock results without actually processing video
+    # Simulating ~50 detections per "video"
+    num_detections = random.randint(40, 60)
     results = []
-    frame_number = 0
-    
-    # Process every Nth frame to reduce processing time
-    sample_rate = 30  # Process every 30th frame
-    
-    print(f"Video info: {frame_count} frames at {fps} FPS")
-    
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-            
-        frame_number += 1
-        
-        # Sample frames
-        if frame_number % sample_rate != 0:
-            continue
-        
-        # Simulate vehicle detection (in production, use YOLO)
-        detections = simulate_vehicle_detection(frame, frame_number)
-        
+
+    print(f"Generating {num_detections} mock detections for demo purposes")
+
+    for i in range(num_detections):
+        frame_number = i * 30  # Simulate frame numbers
+
+        # Simulate vehicle detection (in production, use YOLO on actual frames)
+        detections = simulate_vehicle_detection(None, frame_number)
+
         # Add to results
         for detection in detections:
             timestamp = int(datetime.now().timestamp() * 1000)
-            
+
             result = {
                 'videoId': video_id,
                 'timestamp': timestamp + frame_number,  # Unique timestamp
@@ -112,43 +101,41 @@ def process_video(video_path, video_id):
                 'boundingBox': detection['bbox'],
                 'ttl': int(datetime.now().timestamp()) + (30 * 24 * 60 * 60)  # 30 days TTL
             }
-            
+
             results.append(result)
-    
-    cap.release()
-    
+
     return results
 
 def simulate_vehicle_detection(frame, frame_number):
     """
     Simulate vehicle detection and speed estimation
-    
+
     In production, this would use:
     - YOLOv8 for detection
     - Object tracking (DeepSORT/ByteTrack)
     - Camera calibration for accurate speed calculation
     """
-    
+
     # Simulate 0-3 vehicles per frame
-    num_vehicles = np.random.randint(0, 4)
-    
+    num_vehicles = random.randint(0, 4)
+
     detections = []
     vehicle_types = ['car', 'truck', 'bus', 'motorcycle']
-    
+
     for i in range(num_vehicles):
         # Simulate detection
         detection = {
-            'type': np.random.choice(vehicle_types),
-            'speed': float(np.random.randint(30, 120)),  # km/h
-            'confidence': float(np.random.uniform(0.7, 0.99)),
+            'type': random.choice(vehicle_types),
+            'speed': float(random.randint(30, 120)),  # km/h
+            'confidence': round(random.uniform(0.7, 0.99), 2),
             'bbox': {
-                'x': int(np.random.randint(0, 1920)),
-                'y': int(np.random.randint(0, 1080)),
-                'width': int(np.random.randint(50, 200)),
-                'height': int(np.random.randint(50, 150))
+                'x': random.randint(0, 1920),
+                'y': random.randint(0, 1080),
+                'width': random.randint(50, 200),
+                'height': random.randint(50, 150)
             }
         }
-        
+
         detections.append(detection)
-    
+
     return detections

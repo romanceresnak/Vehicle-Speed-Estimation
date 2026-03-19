@@ -17,24 +17,29 @@ Keď som hľadal zaujímavý projekt pre demonštráciu AWS serverless architekt
 
 Systém je postavený na 6 hlavných AWS službách, ktoré spolu tvoria event-driven pipeline:
 
-```
-Traffic Camera → S3 (Videos) → Lambda (Processor) → DynamoDB → API Gateway → React Dashboard
-                                      ↓
-                                S3 (Heatmaps)
-                                      ↓
-                               CloudFront CDN
-```
+### Data Flow
+
+1. **Upload:** Traffic kamery uploadujú MP4 videá do **S3 Videos** bucketu
+2. **Processing:** S3 event automaticky triggeruje **Lambda** funkciu
+3. **Storage:** Lambda zapisuje výsledky do **DynamoDB** a heatmapy do **S3 Heatmaps**
+4. **Distribution:** CloudFront distribuuje heatmapy globálne (CDN)
+5. **API Layer:** React aplikácia fetchuje dáta cez **API Gateway** z DynamoDB
+6. **Frontend:** Dashboard je distribuovaný cez CloudFront (statické S3 hosting)
 
 ### Komponenty
 
 **1. S3 Buckets (3x)**
 - `videos` - úložisko pre nahrané MP4 videá (30-day retention)
-- `dashboard` - statická React aplikácia
-- `heatmaps` - generované heat mapy (public read)
+- `dashboard` - statická React aplikácia (source pre CloudFront)
+- `heatmaps` - generované heat mapy (distribuované cez CloudFront)
 
 **2. Lambda Functions (2x)**
 - `video-processor` - spracovanie videa, detekcia vozidiel (3008 MB RAM, 15 min timeout)
+  - Input: S3 event trigger
+  - Output: DynamoDB records + S3 heatmaps
 - `api-handler` - REST API pre dashboard (512 MB RAM)
+  - Input: API Gateway request
+  - Output: JSON response s dátami z DynamoDB
 
 **3. DynamoDB Tables (2x)**
 - `results` - detekované vozidlá s rýchlosťou
@@ -48,9 +53,12 @@ Traffic Camera → S3 (Videos) → Lambda (Processor) → DynamoDB → API Gatew
 - REST API s `/results` endpointom
 - CORS enabled pre dashboard
 - Lambda proxy integration
+- Spája React frontend s DynamoDB cez Lambda
 
 **5. CloudFront**
-- Global CDN pre dashboard
+- Global CDN s 2 origin buckety:
+  - S3 Dashboard (React aplikácia)
+  - S3 Heatmaps (PNG obrázky)
 - HTTPS only
 - Cache invalidation po deploy
 
@@ -58,11 +66,11 @@ Traffic Camera → S3 (Videos) → Lambda (Processor) → DynamoDB → API Gatew
 Infraštruktúra je rozdelená do 5 modulov:
 ```
 terraform/modules/
-├── s3/           # Buckets s lifecycle policies
-├── dynamodb/     # Tables s GSI a TTL
-├── lambda/       # Functions s IAM roles
+├── s3/           # 3 buckety s lifecycle policies
+├── dynamodb/     # 2 tables s GSI a TTL
+├── lambda/       # 2 functions s IAM roles a S3 triggers
 ├── api-gateway/  # REST API s CORS
-└── cloudfront/   # CDN distribution
+└── cloudfront/   # CDN distribution s 2 origins
 ```
 
 ## Implementácia
@@ -693,28 +701,17 @@ module "us_deployment" {
 
 ## Záver
 
-Tento projekt demonštruje silu serverless architektúry na AWS:
-- ⚡ **Rýchly vývoj:** Od nápadu po produkciu za 1 deň
-- 💰 **Nízke náklady:** $0.40/mesiac pre demo, $14/mesiac pre 100 videí
-- 🔧 **Nulová údržba:** Žiadne servery, žiadne patching, žiadne scaling starosti
-- 📈 **Auto-scaling:** Lambda a DynamoDB škálujú automaticky
-- 🏗️ **Infrastructure as Code:** Celá infraštruktúra vo verzionovom systéme
+Celý projekt od prvého `terraform init` po live dashboard mi trval asi deň práce. Výsledok? Plne funkčný traffic analyzer, ktorý ma stojí 40 centov mesačne a dokáže automaticky škálovať od 0 do tisícov requestov bez toho, aby som sa musel starať o servery.
 
-**Kedy použiť serverless:**
-- ✅ Event-driven workloads (upload videa → spracovanie)
-- ✅ Premenlivý traffic (0 requestov v noci, 100 cez deň)
-- ✅ Rýchle prototyping (nasadenie za minúty)
-- ✅ Cost-sensitive projekty (platíte len za použitie)
+Najväčšie prekvapenie? Lambda 70 MB limit, ktorý ma donútil odstániť OpenCV a použiť mock data. V produkčnej verzii by som použil Lambda Container Images (10 GB limit) alebo AWS Rekognition Video.
 
-**Kedy radšej nie:**
-- ❌ Long-running tasks (>15 min)
-- ❌ Stateful aplikácie vyžadujúce trvalé connections
-- ❌ Vysoké throughput ML inference (lepšie SageMaker)
-- ❌ Konzistentne vysoký traffic (EC2/ECS môže byť lacnejší)
+Terraform moduly sa mi osvedčili - keď som potreboval zmeniť DynamoDB TTL, stačilo upraviť jeden súbor v `modules/dynamodb/` a deploy trval 2 minúty. Deployment automation bol game changer - jeden script, ktorý mi za 10 minút nahodí celú infraštruktúru vrátane demo dát.
+
+Serverless má zmysel hlavne pre event-driven workloady s premenlivým traffikom. Ak máte konzistentne vysoký traffic alebo potrebujete long-running tasks (>15 min), EC2/ECS bude lacnejšie. Pre prototyping a low-traffic projekty je serverless bezkonkurenčný.
 
 ---
 
-**Repository:** [GitHub link]
+**Repository:** [https://github.com/romanceresnak/Vehicle-Speed-Estimation](https://github.com/romanceresnak/Vehicle-Speed-Estimation)
 **Live Demo:** [CloudFront Dashboard URL]
 **Náklady:** $0.38/mesiac (10 videí)
 

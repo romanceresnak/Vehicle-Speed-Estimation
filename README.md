@@ -4,17 +4,7 @@ Computer vision pipeline for vehicle detection, speed estimation, and traffic sa
 
 ## Architecture
 
-```
-S3 (Videos) → Lambda (Processing) → YOLO Detection → Speed Estimation
-                                                              ↓
-                                                         DynamoDB
-                                                              ↓
-                                                    API Gateway + Lambda
-                                                              ↓
-                                                      React Dashboard
-                                                              ↓
-                                                    Heatmap Analytics
-```
+![Architecture Diagram](assets/architecture-diagram.png)
 
 ## Features
 
